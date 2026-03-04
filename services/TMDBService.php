@@ -2,13 +2,9 @@
 
 class TMDBService {
 
-    /**
-     * Récupère des films selon leur type (popular, top_rated, upcoming, now_playing)
-     */
     public static function getMovies(string $type): array {
         $validTypes = ['popular', 'top_rated', 'upcoming', 'now_playing'];
 
-        // Vérifie que le type est valide
         if (!in_array($type, $validTypes)) {
             return ['error' => "Type invalide. Types acceptés : " . implode(', ', $validTypes)];
         }
@@ -29,9 +25,6 @@ class TMDBService {
         }
     }
 
-    /**
-     * Recherche des films par mot-clé
-     */
     public static function searchMovies(string $query): array {
         $url = TMDB_BASE_URL . "/search/movie?api_key=" . TMDB_API_KEY . "&language=fr-FR&query=" . urlencode($query);
 
