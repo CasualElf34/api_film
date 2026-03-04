@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎬 CinéAPI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── À TOI DE PERSONNALISER LE CSS ICI ! ── */
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --card: #13131a;
+      --accent: #e63946;
+      --text: #f0f0f0;
+      --muted: #888;
+      --border: #222;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 2rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+
+    /* ── BARRE DE RECHERCHE ── */
+    .search-bar {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .search-bar input {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      width: 260px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input:focus { border-color: var(--accent); }
+
+    .search-bar button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .search-bar button:hover { opacity: 0.85; }
+
+    /* ── FILTRES ── */
+    .filters {
+      display: flex;
+      gap: 0.8rem;
+      padding: 1.5rem 3rem;
+    }
+
+    .filter-btn {
+      background: var(--card);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* ── TITRE SECTION ── */
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      padding: 0 3rem 1rem;
+      color: var(--text);
+    }
+
+    /* ── GRILLE DE FILMS ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.5rem;
+      padding: 0 3rem 3rem;
+    }
+
+    /* ── CARTE FILM ── */
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+    }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-no-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .card-info {
+      padding: 0.8rem;
+    }
+
+    .card-title {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .rating {
+      color: #f4c542;
+      font-weight: 500;
+    }
+
+    /* ── BOUTON FAVORI ── */
+    .fav-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      color: white;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      backdrop-filter: blur(4px);
+    }
+
+    .fav-btn:hover { background: var(--accent); }
+    .fav-btn.is-fav { background: var(--accent); }
+
+    /* ── LOADER ── */
+    .loader {
+      text-align: center;
+      padding: 4rem;
+      color: var(--muted);
+      font-size: 1rem;
+      grid-column: 1/-1;
+    }
+
+    /* ── MESSAGE VIDE ── */
+    .empty {
+      text-align: center;
+      padding: 4rem;
+      color: var(--muted);
+      grid-column: 1/-1;
+    }
+
+    /* ── TOAST NOTIFICATION ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--accent);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">🎬 CinéAPI</div>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Rechercher un film..." />
+      <button onclick="search()">Chercher</button>
+    </div>
+  </header>
+
+  <!-- FILTRES -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="loadMovies('popular', this)">🔥 Populaires</button>
+    <button class="filter-btn" onclick="loadMovies('top_rated', this)">⭐ Les mieux notés</button>
+    <button class="filter-btn" onclick="loadMovies('upcoming', this)">🗓️ À venir</button>
+    <button class="filter-btn" onclick="loadMovies('now_playing', this)">🎥 En ce moment</button>
+    <button class="filter-btn" onclick="loadFavorites(this)">❤️ Favoris</button>
+  </div>
+
+  <!-- TITRE -->
+  <div class="section-title" id="sectionTitle">Films Populaires</div>
+
+  <!-- GRILLE -->
+  <div class="grid" id="grid">
+    <div class="loader">Chargement...</div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+<script>
+  // ══════════════════════════════════════════
+  // CONFIG — change l'URL si besoin
+  // ══════════════════════════════════════════
+  const API = 'http://localhost:8000';
+
+  // ══════════════════════════════════════════
+  // CHARGER LES FILMS
+  // ══════════════════════════════════════════
+  async function loadMovies(type, btn) {
+    setActiveBtn(btn);
+    const titles = {
+      popular: 'Films Populaires',
+      top_rated: 'Les Mieux Notés',
+      upcoming: 'À Venir',
+      now_playing: 'En Ce Moment'
+    };
+    document.getElementById('sectionTitle').textContent = titles[type];
+    showLoader();
+
+    try {
+      const res = await fetch(`${API}/movies?type=${type}`);
+      const data = await res.json();
+      renderMovies(data.results || []);
+    } catch (e) {
+      showError("Impossible de contacter l'API. Le serveur PHP tourne ?");
+    }
+  }
+
+  // ══════════════════════════════════════════
+  // RECHERCHE
+  // ══════════════════════════════════════════
+  async function search() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    document.getElementById('sectionTitle').textContent = `Résultats : "${q}"`;
+    showLoader();
+
+    try {
+      const res = await fetch(`${API}/movies/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      renderMovies(data.results || []);
+    } catch (e) {
+      showError("Erreur lors de la recherche.");
+    }
+  }
+
+  // Lancer la recherche avec Entrée
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') search();
+  });
+
+  // ══════════════════════════════════════════
+  // AFFICHER LES FILMS
+  // ══════════════════════════════════════════
+  function renderMovies(movies) {
+    const grid = document.getElementById('grid');
+    const favs = getFavorites();
+
+    if (!movies.length) {
+      grid.innerHTML = '<div class="empty">Aucun film trouvé 😕</div>';
+      return;
+    }
+
+    grid.innerHTML = movies.map(movie => {
+      const poster = movie.poster_path
+        ? `<img src="https://image.tmdb.org/t/p/w300${movie.poster_path}" alt="${movie.title}" loading="lazy">`
+        : `<div class="card-no-poster">🎬</div>`;
+
+      const year = movie.release_date ? movie.release_date.slice(0, 4) : '?';
+      const note = movie.vote_average ? movie.vote_average.toFixed(1) : '?';
+      const isFav = favs.some(f => f.id === movie.id);
+
+      return `
+        <div class="card">
+          ${poster}
+          <button class="fav-btn ${isFav ? 'is-fav' : ''}" onclick="toggleFav(event, ${movie.id}, '${escHtml(movie.title)}', '${movie.poster_path || ''}')">
+            ${isFav ? '❤️' : '🤍'}
+          </button>
+          <div class="card-info">
+            <div class="card-title" title="${escHtml(movie.title)}">${escHtml(movie.title)}</div>
+            <div class="card-meta">
+              <span>${year}</span>
+              <span class="rating">★ ${note}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ══════════════════════════════════════════
+  // FAVORIS (stockés en mémoire + API)
+  // ══════════════════════════════════════════
+  function getFavorites() {
+    try { return JSON.parse(localStorage.getItem('favs') || '[]'); } catch { return []; }
+  }
+
+  function saveFavorites(favs) {
+    localStorage.setItem('favs', JSON.stringify(favs));
+  }
+
+  async function toggleFav(e, id, title, poster_path) {
+    e.stopPropagation();
+    const favs = getFavorites();
+    const exists = favs.some(f => f.id === id);
+
+    if (exists) {
+      // Supprimer
+      const newFavs = favs.filter(f => f.id !== id);
+      saveFavorites(newFavs);
+      await fetch(`${API}/favorites?id=${id}`, { method: 'DELETE' }).catch(() => {});
+      showToast('Retiré des favoris');
+    } else {
+      // Ajouter
+      const newFav = { id, title, poster_path };
+      saveFavorites([...favs, newFav]);
+      await fetch(`${API}/favorites`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFav)
+      }).catch(() => {});
+      showToast('❤️ Ajouté aux favoris !');
+    }
+
+    // Rafraîchit l'icône sur la carte
+    const btn = e.currentTarget;
+    const isFavNow = !exists;
+    btn.textContent = isFavNow ? '❤️' : '🤍';
+    btn.classList.toggle('is-fav', isFavNow);
+  }
+
+  async function loadFavorites(btn) {
+    setActiveBtn(btn);
+    document.getElementById('sectionTitle').textContent = '❤️ Mes Favoris';
+    const favs = getFavorites();
+    renderMovies(favs.map(f => ({ id: f.id, title: f.title, poster_path: f.poster_path, release_date: '', vote_average: null })));
+  }
+
+  // ══════════════════════════════════════════
+  // UTILITAIRES
+  // ══════════════════════════════════════════
+  function showLoader() {
+    document.getElementById('grid').innerHTML = '<div class="loader">Chargement...</div>';
+  }
+
+  function showError(msg) {
+    document.getElementById('grid').innerHTML = `<div class="empty">❌ ${msg}</div>`;
+  }
+
+  function setActiveBtn(btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+
+  // ── Chargement initial ──
+  loadMovies('popular');
+</script>
+</body>
+</html>
